@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+require 'CSV'
+require 'json'
+
+stations = {}
+trains = {}
+
+CSV.foreach('caltrain-gtfs/stops.txt', headers: :first_row) do |row|
+	stations[row['stop_id']] = {
+		:name => row['stop_name'],
+		:location => {
+			:lat => row['stop_lat'],
+			:long => row['stop_lon']
+		}
+	}
+end
+
+CSV.foreach('caltrain-gtfs/trips.txt', headers: :first_row) do |row|
+	trains[row['trip_id']] = {
+		:number => row['trip_short_name']
+	}
+end
+
+def clean_station(str)
+	cleaned = str.gsub(/[^A-Za-z0-9]/, '').downcase
+	if cleaned.end_with? 'caltrain'
+		cleaned = cleaned[0...-8]
+	elsif cleaned.end_with? 'caltrainstation'
+		cleaned = cleaned[0...-15]
+	end
+
+	cleaned
+end
+
+json = {}
+
+CSV.foreach('caltrain-gtfs/stop_times.txt', headers: :first_row) do |row|
+	station = stations[row['stop_id']]
+	train = trains[row['trip_id']]
+	stop_time = row['departure_time']
+
+	json[train[:number]] ||= {}
+	json[train[:number]][clean_station(station[:name])] = stop_time
+	# puts "SET train:#{train[:number]}:#{clean_station station[:name]} #{stop_time}"
+end
+
+puts json.to_json
