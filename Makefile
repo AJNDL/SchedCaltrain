@@ -2,7 +2,7 @@ GTFS_FEED_URL="http://www.caltrain.com/Assets/GTFS/caltrain/GTFS-Caltrain-Devs.z
 
 GTFS_FOLDER_NAME="caltrain-gtfs"
 
-all: clean download parse
+all: clean download to_json
 
 clean:
 	rm -rf caltrain-gtfs/ caltrain-gtfs.zip caltrain.json
@@ -13,5 +13,5 @@ download:
 	unzip -qq $(GTFS_FOLDER_NAME).zip -d $(GTFS_FOLDER_NAME)
 	rm $(GTFS_FOLDER_NAME).zip
 
-parse:
-	ruby parse.rb > caltrain.json
+to_json:
+	./parse > caltrain.json
